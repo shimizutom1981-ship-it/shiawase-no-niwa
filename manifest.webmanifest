@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "しあわせの庭",
+  "short_name": "しあわせの庭",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#356c59",
+  "icons": [
+    {
+      "src": "icons/icon-192-20261105.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-20261105.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

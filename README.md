@@ -23,3 +23,5 @@ GitHub Pages公開後: https://shimizutom1981-ship-it.github.io/shiawase-no-niwa
 
 ## 作業記録
 - 2026-11-05／ChatGPT／MVPをGitHub mainに登録しREADME整備／GitHub Pagesの公開設定と公開URLの動作確認
+
+- 2026-11-05 11:03 JST／ChatGPT／採用済みアイコン192・512px、favicon、Apple用180px、manifest・HTML参照を更新（機能・計算・データ変更なし）／公開サイト検証、既存インストールの端末反映確認
