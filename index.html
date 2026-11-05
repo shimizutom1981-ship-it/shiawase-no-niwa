@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#356c59"><title>しあわせの庭</title>
+<style>
+:root{font-family:system-ui,sans-serif;background:#f5f7f2;color:#20352b}*{box-sizing:border-box}body{margin:0}main{max-width:680px;margin:auto;padding:24px 16px}h1{margin-bottom:4px}.muted{color:#62786a}.panel{background:white;border:1px solid #dbe6dd;border-radius:18px;padding:18px;margin:16px 0}button,select{font:inherit;border-radius:12px;border:1px solid #c9d8cc;padding:12px;background:white;color:#20352b;cursor:pointer}button.active,.primary{background:#356c59;color:white}.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.row{display:flex;gap:8px;flex-wrap:wrap}label{display:block;margin:14px 0 6px;font-weight:600}.idea{font-size:1.4rem;font-weight:700;margin:12px 0}small{color:#62786a}button:focus-visible{outline:3px solid #e4a750}#history li{margin:8px 0}
+</style></head>
+<body><main><header><h1>🌱 しあわせの庭</h1><p class="muted">今日の小さな冒険を見つけよう</p></header>
+<section class="panel"><label>今の気分は？</label><div class="choices" id="categories"></div><label for="duration">使える時間</label><select id="duration"><option value="15">15分</option><option value="30" selected>30分</option><option value="60">1時間</option><option value="240">半日</option></select></section>
+<section class="panel" aria-live="polite"><small id="categoryLabel"></small><div class="idea" id="ideaTitle"></div><p id="ideaDescription"></p><p class="muted" id="ideaTime"></p><button class="primary" id="next">別のアイデアを提案 ↻</button><label>やってみた感想</label><div class="row"><button data-rate="またやりたい">❤️ またやりたい</button><button data-rate="普通">🙂 普通</button><button data-rate="合わなかった">😐 合わなかった</button></div></section>
+<section class="panel"><h2>体験履歴</h2><ul id="history"></ul><button id="clear">履歴を削除</button></section><p><small>体験履歴はこの端末内だけに保存されます。提案は幸福の向上を保証するものではありません。</small></p></main>
+<script>
+'use strict';
+const categories=['おまかせ','つながる','楽しむ','上達する','発見する','創り出す','役に立つ','整える'];
+const ideas=[
+['つながる','家族と新しい遊びを考える','家にあるものを使って遊びを一つ発明する',30],
+['つながる','友人に近況を送る','久しぶりの友人に短いメッセージを送る',15],
+['楽しむ','短編映画を見る','普段選ばないジャンルを試す',30],
+['楽しむ','お気に入りの音楽を聴く','好きな曲をゆっくり3曲楽しむ',15],
+['上達する','ピアノの新曲に挑戦','最初の8小節だけ練習する',15],
+['上達する','新しい技術を学ぶ','興味のあるテーマを一つ調べる',30],
+['発見する','知らない街を歩く','いつもと違う道で気になるものを3つ見つける',30],
+['発見する','未知の音楽を聴く','知らないジャンルから3曲選ぶ',15],
+['創り出す','200字の物語を書く','今日見たものを題材に短い物語を作る',15],
+['創り出す','新しい料理を作る','普段使わない食材や調味料を試す',60],
+['役に立つ','誰かに知識を共有する','最近学んだことを分かりやすく伝える',15],
+['役に立つ','身近な人を手伝う','相手が助かる小さなことを一つする',30],
+['整える','自然の中を散歩する','スマホを見ずに景色を楽しむ',30],
+['整える','静かな休息を取る','ゆっくり呼吸して体を休める',15]
+];
+const key='shiawase-no-niwa-history-v1';
+let history=[];try{const stored=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(stored))history=stored;}catch(e){}
+let selected='おまかせ',current=null,last=-1;
+const $=id=>document.getElementById(id);
+function save(){try{localStorage.setItem(key,JSON.stringify(history));}catch(e){}}
+function renderCategories(){const root=$('categories');root.replaceChildren();categories.forEach(c=>{const b=document.createElement('button');b.textContent=c;b.className=c===selected?'active':'';b.setAttribute('aria-pressed',String(c===selected));b.onclick=()=>{selected=c;renderCategories();pick()};root.append(b)})}
+function pick(){const max=Number($('duration').value);const candidates=ideas.map((x,i)=>({x,i})).filter(({x})=>(selected==='おまかせ'||x[0]===selected)&&x[3]<=max);if(!candidates.length){current=null;$('ideaTitle').textContent='候補がありません';$('ideaDescription').textContent='時間やカテゴリーを変更してください';$('ideaTime').textContent='';$('categoryLabel').textContent='';return}
+const pool=candidates.filter(v=>v.i!==last);const usable=pool.length?pool:candidates;const weights=usable.map(v=>{const ratings=history.filter(h=>h.title===v.x[1]);const lastRating=ratings.at(-1)?.rating;return Math.max(.2,3/(1+ratings.length)+(lastRating==='またやりたい'?1:0)-(lastRating==='合わなかった'?1:0))});let r=Math.random()*weights.reduce((a,b)=>a+b,0);let choice=usable.at(-1);for(let i=0;i<usable.length;i++){r-=weights[i];if(r<=0){choice=usable[i];break}}current=choice.x;last=choice.i;$('categoryLabel').textContent=current[0];$('ideaTitle').textContent=current[1];$('ideaDescription').textContent=current[2];$('ideaTime').textContent='目安 '+current[3]+'分'}
+function renderHistory(){const root=$('history');root.replaceChildren();history.slice(-12).reverse().forEach(h=>{const li=document.createElement('li');li.textContent=h.date+'　'+h.title+' — '+h.rating;root.append(li)});if(!history.length){const li=document.createElement('li');li.textContent='まだ記録がありません';root.append(li)}}
+$('duration').addEventListener('change',pick);$('next').addEventListener('click',pick);document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{if(!current)return;history.push({date:new Date().toLocaleDateString('ja-JP'),title:current[1],rating:b.dataset.rate});save();renderHistory();pick()}));$('clear').addEventListener('click',()=>{if(!confirm('体験履歴をすべて削除しますか？'))return;history=[];save();renderHistory()});renderCategories();renderHistory();pick();
+</script></body></html>
